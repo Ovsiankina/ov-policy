@@ -1,0 +1,70 @@
+# ov repo CI: shellcheck, the ov- prefix lint (Principle I), the POLICY.md
+# sync check (R-10) and every tests/ov-*.test.sh. Not shipped into target
+# projects.
+name: ov-ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: shellcheck -x
+        run: shellcheck -x extensions/ov/scripts/bash/*.sh scripts/*.sh tests/*.sh
+
+  prefix:
+    name: prefix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: ov- prefix lint
+        run: bash scripts/ov-lint-prefix.sh
+
+  policy-sync:
+    name: policy-sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: POLICY.md and the preset copy match
+        run: bash scripts/ov-sync-policy.sh --check
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    env:
+      # Matches requires.speckit_version (">=1.2.0") in extensions/ov/extension.yml.
+      SPECKIT_VERSION: "1.2.0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install jq
+        run: sudo apt-get update -q && sudo apt-get install -y -q jq
+      - uses: astral-sh/setup-uv@v6
+      - name: Install spec-kit specify
+        run: uv tool install "specify-cli==${SPECKIT_VERSION}"
+      - name: Run tests/ov-*.test.sh
+        run: |
+          failed=0
+          for t in tests/ov-*.test.sh; do
+            echo "::group::$t"
+            if ! bash "$t"; then
+              failed=1
+              echo "::error::$t failed"
+            fi
+            echo "::endgroup::"
+          done
+          exit "$failed"

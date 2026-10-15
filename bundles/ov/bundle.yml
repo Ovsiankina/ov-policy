@@ -1,0 +1,32 @@
+schema_version: "1.0"
+
+bundle:
+  id: ov
+  name: "ov"
+  version: "0.1.0"
+  role: "Spec-driven guardrails for Claude Code agents"
+  description: "The ov extension (read-only paths, authorship and PR policy, SRS and C4 workflow) plus the ov-policy preset (POLICY.md prepended to the constitution)"
+  author: "TODO(author)"
+  license: "TODO(author)"
+
+requires:
+  speckit_version: ">=1.2.0"
+
+integration:
+  id: claude
+
+# spec-kit 1.2.0 reads `source:` as a catalog name, not a path, so local paths
+# cannot be used here (research R-11 fallback). Until ov is published, the
+# components resolve only where they are installed; dev installs use
+#   specify extension add <repo>/extensions/ov --dev
+#   specify preset add --dev <repo>/presets/ov-policy
+# TODO(author): add `source: <catalog name>` to both entries once ov is in a catalog.
+provides:
+  extensions:
+    - id: ov
+      version: "0.1.0"
+  presets:
+    - id: ov-policy
+      version: "0.1.0"
+      priority: 10
+      strategy: prepend

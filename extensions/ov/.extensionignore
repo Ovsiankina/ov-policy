@@ -1,0 +1,13 @@
+# Files that never ship into target projects (gitignore syntax).
+*.test.sh
+fixtures/
+tests/
+
+# editor and OS cruft
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
